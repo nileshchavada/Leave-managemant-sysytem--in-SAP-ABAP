@@ -1,0 +1,107 @@
+*&---------------------------------------------------------------------*
+*& Report  ZAB_EMP_HOLIDAY_INSERT
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  ZAB_EMP_HOLIDAY_INSERT.
+
+TYPE-POOLS: vrm.
+
+DATA: lv_value type vrm_values  WITH HEADER LINE,
+      result2 type c length 30,
+      name2 type vrm_id.
+
+SELECTION-SCREEN BEGIN OF BLOCK block1 WITH FRAME TITLE text-001.
+  PARAMETERS : H_ID TYPE I,
+               H_NAME TYPE C LENGTH 20,
+               DEPT  AS LISTBOX VISIBLE LENGTH 20,
+               SDH TYPE D,
+               EDH TYPE D,
+               NOD TYPE P LENGTH 6 DECIMALS 2.
+
+
+SELECTION-SCREEN END OF BLOCK BLOCK1.
+AT SELECTION-SCREEN OUTPUT.
+
+NAME2 = 'DEPT'.
+
+  lv_value-key = '1'.
+  lv_value-text = 'ALL DEPARTMENT'.
+  APPEND lv_value.
+
+  lv_value-key = '2'.
+  lv_value-text = 'FINANCE DEPARTMENT'.
+  APPEND lv_value.
+
+  lv_value-key = '3'.
+  lv_value-text = 'DEVELOPMENT DEPARTMENT'.
+  APPEND lv_value.
+
+  lv_value-key = '4'.
+  lv_value-text = 'HR DEPARTMENT'.
+  APPEND lv_value.
+
+ lv_value-key = '5'.
+  lv_value-text = 'IT DEPARTMENT'.
+  APPEND lv_value.
+
+  CALL FUNCTION 'VRM_SET_VALUES'
+    EXPORTING
+      id     = NAME2
+      values = lv_value[].
+
+
+START-OF-SELECTION.
+
+READ TABLE lv_value WITH KEY key = DEPT.
+result2 = lv_value-text.
+WRITE: / 'PARAMETER1:', result2.
+
+*----------------------------------------------------------------------*
+*       CLASS HOLIDAY DEFINITION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
+CLASS HOLIDAY DEFINITION.
+  PUBLIC SECTION.
+    DATA it_HOLIDAY TYPE STANDARD TABLE OF ZAB_HOLIDAY_DETA.
+    DATA wa_HOLIDAY TYPE ZAB_HOLIDAY_DETA.
+    METHODS APPLY.
+ENDCLASS.                    "HOLIDAY DEFINITION
+
+*----------------------------------------------------------------------*
+*       CLASS HOLIDAY IMPLEMENTATION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
+CLASS HOLIDAY IMPLEMENTATION .
+  METHOD APPLY.
+
+    wa_HOLIDAY-HOLIDAY_ID = H_ID.
+    wa_HOLIDAY-HOLIDAY_NAME = H_NAME.
+    wa_HOLIDAY-EMP_DEPARTMENT = result2.
+    wa_HOLIDAY-START_DATE_HOLID = SDH.
+    wa_HOLIDAY-END_DATE_HOLIDAY = EDH.
+    wa_HOLIDAY-NO_OF_DAYS = NOD.
+
+    INSERT wa_HOLIDAY INTO TABLE it_HOLIDAY.
+    INSERT ZAB_HOLIDAY_DETA FROM TABLE IT_HOLIDAY.
+
+
+    if sy-subrc = 0.
+      write ' HOLIDAY INSERTED Successfully'.
+    elseif sy-subrc = 15.
+      write 'Error While INSERTING HOLIDAY'.
+    ENDIF.
+
+  ENDMETHOD.                    "APPLY
+ENDCLASS.                    "HOLIDAY IMPLEMENTATION
+
+
+START-OF-SELECTION.
+  DATA A1 TYPE REF TO HOLIDAY.
+  CREATE OBJECT: A1.
+  A1->APPLY( ).

@@ -1,0 +1,46 @@
+*&---------------------------------------------------------------------*
+*& Report  ZAB_EMP_HOLIDAY_VIEW
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  ZAB_EMP_HOLIDAY_VIEW.
+SELECTION-SCREEN BEGIN OF BLOCK B1 WITH FRAME TITLE TEXT-001.
+PARAMETERS:
+date type d.
+SELECTION-SCREEN END OF BLOCK B1.
+CLASS VIEW DEFINITION.
+  PUBLIC SECTION.
+
+  DATA it_HOLIDAY TYPE STANDARD TABLE OF ZAB_HOLIDAY_DETA.
+  DATA wa_HOLIDAY TYPE ZAB_HOLIDAY_DETA.
+
+  METHODS GET.
+
+  ENDCLASS.
+
+  CLASS VIEW IMPLEMENTATION.
+    METHOD GET.
+      SELECT * FROM ZAB_HOLIDAY_DETA INTO TABLE it_HOLIDAY where START_DATE_HOLID =  date.
+if sy-subrc = '0'.
+  write : /'This is the Holiday Data'.
+  SKIP 1.
+        LOOP AT it_HOLIDAY INTO wa_HOLIDAY.
+           WRITE:/'HOLIDAY_ID=',  wa_HOLIDAY-HOLIDAY_ID,
+      / 'HOLIDAY_NAME=',wa_HOLIDAY-HOLIDAY_NAME,
+       / 'EMP_DEPARTMENT=',wa_HOLIDAY-EMP_DEPARTMENT,
+       / 'START_DATE_HOLID=',wa_HOLIDAY-START_DATE_HOLID,
+       / 'END_DATE_HOLIDAY=',WA_HOLIDAY-END_DATE_HOLIDAY,
+        / 'No_OF_DAY=',WA_HOLIDAY-NO_OF_DAYS.
+      endloop.
+ELSEIF sy-subrc = '4'.
+  write : 'There is no Holiday on this day'.
+  ENDIF.
+ ENDMETHOD.
+      ENDCLASS.
+      START-OF-SELECTION.
+      DATA V1 type REF TO VIEW.
+      CREATE OBJECT: V1.
+      V1->GET( ).

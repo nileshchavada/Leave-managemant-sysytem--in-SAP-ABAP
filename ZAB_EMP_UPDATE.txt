@@ -1,0 +1,87 @@
+*&---------------------------------------------------------------------*
+*& Report  ZAB_EMP_UPDATE
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  ZAB_EMP_UPDATE.
+SELECTION-SCREEN BEGIN OF BLOCK B2 WITH FRAME TITLE TEXT-001.
+PARAMETERS :FNAME RADIOBUTTON GROUP  RAD1,
+LNAME RADIOBUTTON GROUP RAD1,
+GENDER RADIOBUTTON GROUP RAD1,
+ADDRESS RADIOBUTTON GROUP RAD1,
+CITY RADIOBUTTON GROUP RAD1,
+STATE RADIOBUTTON GROUP RAD1,
+NUMBER RADIOBUTTON GROUP RAD1,
+EMAIL_ID RADIOBUTTON GROUP RAD1,
+DES RADIOBUTTON GROUP RAD1,
+DPT RADIOBUTTON GROUP RAD1,
+enterval type c length 50,
+eid type ZAB_EMP_ID.
+
+
+SELECTION-SCREEN END OF block b2.
+
+
+
+
+*----------------------------------------------------------------------*
+*       CLASS UPDATE DEFINITION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
+CLASS UPDATE DEFINITION.
+  PUBLIC SECTION.
+    DATA IT_TAB TYPE STANDARD TABLE OF ZAB_EMP_DETAILS .
+    METHODS UPDATE1.
+     ENDCLASS.
+             "UPDATE DEFINITION
+*----------------------------------------------------------------------*
+*       CLASS UPDATE IMPLEMENTATION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
+CLASS UPDATE IMPLEMENTATION.
+
+  METHOD UPDATE1.
+
+    if ( FNAME = 'X' ).
+      update ZAB_EMP_DETAILS set FIRST_NAME  = enterval where EMP_ID = eid.
+    elseif ( LNAME = 'X' ).
+      update ZAB_EMP_DETAILS set LAST_NAME = enterval where EMP_ID = eid.
+    elseif ( GENDER = 'X' ).
+      update ZAB_EMP_DETAILS set GENDER = enterval where EMP_ID = eid.
+    elseif ( ADDRESS = 'X' ).
+      update ZAB_EMP_DETAILS set ADDRESS = enterval where EMP_ID = eid.
+    elseif ( CITY = 'X' ).
+      update ZAB_EMP_DETAILS set CITY = enterval where EMP_ID = eid.
+    elseif ( STATE = 'X' ).
+      update ZAB_EMP_DETAILS set STATE = enterval where EMP_ID = eid.
+    elseif ( NUMBER = 'X' ).
+      update ZAB_EMP_DETAILS set CONTACT_NO = enterval where EMP_ID = eid.
+    elseif ( EMAIL_ID = 'X' ).
+      update ZAB_EMP_DETAILS set EMAIL_ID = enterval where EMP_ID = eid.
+    elseif ( DES = 'X' ).
+      update ZAB_EMP_DETAILS set DESIGNATION = enterval where EMP_ID = eid.
+    elseif ( DPT = 'X' ).
+      update ZAB_EMP_DETAILS set DEPARTMENT = enterval where EMP_ID = eid.
+    endif.
+
+
+    if sy-subrc = 0.
+      write 'records updated successfully'.
+    elseif sy-subrc = 4.
+      write 'Error While record not updated '.
+    ENDIF.
+
+  ENDMETHOD.
+  ENDCLASS.                                               "UPDATE1
+                                           "UPDATE2
+                  "UPDATE IMPLEMENTATION
+
+START-OF-SELECTION.
+  DATA U1 TYPE REF TO UPDATE.
+  CREATE OBJECT U1.
+  U1->UPDATE1(   ).

@@ -1,0 +1,64 @@
+*&---------------------------------------------------------------------*
+*& Report  ZAB_LEAVE_INSERT_VIEW
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  ZAB_LEAVE_INSERT_VIEW.
+
+SELECTION-SCREEN BEGIN OF BLOCK B1 WITH FRAME TITLE TEXT-001.
+PARAMETER EID type zab_emp_id.
+SELECTION-SCREEN END OF BLOCK B1.
+*----------------------------------------------------------------------*
+*       CLASS INSERTVIEW DEFINITION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
+CLASS INSERTVIEW DEFINITION.
+  PUBLIC SECTION .
+    types: begin of ty_view,
+      feild1 type zab_emp_id ,
+      feild2 type i,
+      feild3 type i,
+      feild4 type i,
+      feild5 type i,
+      feild6 type i,
+     end of ty_view.
+    data lv_view type ty_view.
+    DATA LT_VIEW TYPE STANDARD TABLE OF ty_view.
+    data wa_view type ZAB_LEAVE_DETAIL.
+    methods insertview.
+endclass.                    "INSERTVIEW DEFINITION
+*----------------------------------------------------------------------*
+*       CLASS insertview IMPLEMENTATION
+*----------------------------------------------------------------------*
+*
+*----------------------------------------------------------------------*
+class insertview implementation.
+  method insertview.
+*     SELECT * FROM ZAB_LEAVE_DETAIL INTO TABLE LT_VIEW WHERE EMP_ID = EID.
+    LV_VIEW-FEILD1 = wa_view-EMP_ID.
+    LV_VIEW-FEILD2 = wa_view-EARNED_LEAVES.
+    LV_VIEW-FEILD3 = wa_view-CASUAL_LEAVES.
+    LV_VIEW-FEILD4 = wa_view-SICK_LEAVES.
+    LV_VIEW-FEILD5 = wa_view-SPECIAL_LEAVES.
+    LV_VIEW-FEILD6 = wa_view-TOTAL_LEAVES.
+    APPEND LV_VIEW TO LT_VIEW.
+    SELECT * FROM ZAB_LEAVE_DETAIL INTO TABLE LT_VIEW WHERE EMP_ID = EID.
+    LOOP AT LT_VIEW INTO LV_VIEW.
+      WRITE: / 'EMP_ID=',LV_VIEW-FEILD1,
+      / 'EARNED_LEAVES=',LV_VIEW-FEILD2,
+      / 'CASUAL_LEAVES=',LV_VIEW-FEILD3,
+      / 'SICK_LEAVES=',LV_VIEW-FEILD4,
+      / 'SPECIAL_LEAVES=',LV_VIEW-FEILD5,
+     / 'TOTAL_LEAVES=',LV_VIEW-FEILD6.
+    endloop.
+  endmethod.                    "insertview
+endclass.                    "insertview IMPLEMENTATION
+
+start-of-selection.
+  data vw type ref to insertview.
+  create object vw.
+  vw->insertview( ).

@@ -1,0 +1,44 @@
+*&---------------------------------------------------------------------*
+*& Report  ZAB_LEAVEAPLLY_VIEW
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  ZAB_LEAVEAPLLY_VIEW.
+
+SELECTION-SCREEN BEGIN OF BLOCK B1 WITH FRAME TITLE TEXT-001.
+PARAMETERS:
+EMPID type Z_EMP_ID.
+SELECTION-SCREEN END OF BLOCK B1.
+CLASS VIEW DEFINITION.
+  PUBLIC SECTION.
+
+  DATA it_leave TYPE STANDARD TABLE OF ZAB_LEAVE_APPLY.
+  DATA wa_leave TYPE ZAB_LEAVE_APPLY.
+
+  METHODS GET.
+
+  ENDCLASS.
+  CLASS VIEW IMPLEMENTATION.
+    METHOD GET.
+      SELECT * FROM ZAB_LEAVE_APPLY INTO TABLE it_leave where EMP_ID = EMPID.
+
+        LOOP AT it_leave INTO wa_leave.
+           WRITE:/'EMP_ID=',  wa_leave-EMP_ID,
+      / 'LEAVE_ID=',wa_leave-LEAVE_ID,
+       / 'LEAVE_CATEGORY=',wa_leave-LEAVE_CATEGORY,
+       / 'START_DATE_LEAVE=',wa_leave-START_DATE_LEAVE,
+       / 'END_DATE_LEAVE=',WA_leave-END_DATE_LEAVE,
+        / 'No_OF_DAY=',WA_leave-NO_OF_DAYS.
+
+
+      endloop.
+
+ ENDMETHOD.
+      ENDCLASS.
+      START-OF-SELECTION.
+      DATA V1 type REF TO VIEW.
+      CREATE OBJECT: V1.
+      V1->GET( ).

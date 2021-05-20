@@ -1,0 +1,73 @@
+*&---------------------------------------------------------------------*
+*& Report  ZAB_LEAVE_TRANSFER
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  ZAB_LEAVE_TRANSFER.
+DATA: date_1 TYPE D.
+DATA: date(2) TYPE C,
+        month(2) TYPE C,
+        year(4) TYPE C.
+
+*DATA : wa_detail type ZAB_LEAVE_DETAIL,
+*      it_detail type STANDARD TABLE OF ZAB_LEAVE_DETAIL,
+*      EMPID type ZAB_EMP_ID,
+*      EL type i.
+CLASS OPERATION DEFINITION.
+ PUBLIC SECTION.
+ DATA : wa_detail type ZAB_LEAVE_DETAIL,
+      it_detail type STANDARD TABLE OF ZAB_LEAVE_DETAIL,
+      EMPID type ZAB_EMP_ID,
+      EL type i.
+  METHODS LEAVESTRANSFER.
+  ENDCLASS.
+  CLASS OPERATION IMPLEMENTATION.
+    METHOD LEAVESTRANSFER.
+
+year = sy-datum.
+month = sy-datum+4(2).
+date = sy-datum+6(2).
+
+IF date = '13' and month = '07'.
+
+select EMP_ID EARNED_LEAVES from ZAB_LEAVE_DETAIL into table it_detail.
+
+  loop at it_detail into wa_detail.
+  EL = wa_detail-EARNED_LEAVES.
+  EL = EL + '44'.
+  EMPID = wa_detail-EMP_ID.
+*  write: 'EL',EL.
+
+ update ZAB_LEAVE_DETAIL SET EARNED_LEAVES = EARNED_LEAVES + '10'
+   CASUAL_LEAVES =  '10'
+   SICK_LEAVES =  '10'
+   SPECIAL_LEAVES = '14'
+   TOTAL_LEAVES = EL where EMP_ID in (EMPID).
+
+
+ ENDLOOP.
+
+  ENDIF.
+
+  if sy-subrc = 0.
+  write:/'Leaves transfered successfully'.
+
+
+elseif sy-subrc = 15.
+  write 'Error While transfering leaves '.
+   ENDIF.
+
+* WRITE: 'MOnth',month.
+
+*Write: / 'Present Date is:', date_1 DD/MM/YYYY.
+
+ ENDMETHOD.
+ENDCLASS.
+
+START-OF-SELECTION.
+DATA V1 TYPE REF TO OPERATION.
+CREATE OBJECT V1.
+  V1->LEAVESTRANSFER( ).

@@ -1,0 +1,52 @@
+*&---------------------------------------------------------------------*
+*& Report  ZAB_EMP_DELETE
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  ZAB_EMP_DELETE.
+SELECTION-SCREEN BEGIN OF BLOCK B2 WITH FRAME TITLE TEXT-001.
+PARAMETERS:
+EID type zab_emp_id.
+SELECTION-SCREEN END OF block b2.
+*FIELD-SYMBOLS:<D_TAB> TYPEZAB_EMP_DETAILS.
+*FIELD-SYMBOLS:<D_EMPLOYEES> TYPE ANY.
+CLASS DELETE DEFINITION.
+  PUBLIC SECTION.
+  DATA IT_DETAILS TYPE TABLE OF ZAB_EMP_DETAILS.
+  DATA LS_DETAILS TYPE ZAB_EMP_DETAILS.
+    METHODS DELETE.
+    ENDCLASS.
+  CLASS DELETE IMPLEMENTATION.
+    METHOD DELETE.
+      FIELD-SYMBOLS:<D_TAB> TYPE STANDARD TABLE .
+      FIELD-SYMBOLS:<D_WA> TYPE ANY.
+
+*      ASSIGN IT_DETAILS TO <D_TAB>.
+*      SELECT * FROM ZAB_EMP_DETAILS INTO CORRESPONDING FIELDS OF TABLE IT_DETAILS where EMP_ID = EID.
+
+    SELECT * FROM ( ZAB_EMP_DETAILS AS emp1
+      INNER JOIN ZAB_LEAVE_DETAIL AS emp2 ON  emp1~EMP_ID = emp2~EMP_ID )
+
+       INTO CORRESPONDING FIELDS OF TABLE IT_DETAILS WHERE emp1~EMP_ID = EID.
+
+      ASSIGN IT_DETAILS TO <D_TAB>.
+      LOOP AT <D_TAB> ASSIGNING <D_WA>.
+    DELETE ZAB_EMP_DETAILS FROM <D_WA>.
+    DELETE ZAB_LEAVE_DETAIL FROM <D_WA>.
+*     DELETE ZAB_EMP_DETAILS FROM TABLE IT_DETAILS.
+       if sy-subrc = 0.
+  write 'Record deleted successfully'.
+elseif sy-subrc = 4.
+  write 'Error While deleting Record'.
+   ENDIF.
+
+    ENDLOOP.
+ ENDMETHOD.
+      ENDCLASS.
+      START-OF-SELECTION.
+      DATA D1 TYPE REF TO DELETE.
+  CREATE OBJECT D1.
+  D1->DELETE( ).

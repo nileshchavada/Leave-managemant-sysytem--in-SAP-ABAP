@@ -1,0 +1,152 @@
+*&---------------------------------------------------------------------*
+*& Report  ZAB_EMP_ORG
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  ZAB_EMP_ORG.
+
+TYPE-POOLS: vrm.
+
+data: ld_length type i,
+      ld_datein type datum value '20001211'.
+
+  DATA: lv_pattern TYPE string.
+  DATA: lv_success TYPE char1. "abap_pool. " ABAP_FALSE/TRUE
+  DATA: lr_matcher TYPE REF TO cl_abap_matcher.
+
+DATA: value type vrm_values  WITH HEADER LINE,
+      result type c length 30,
+      name type vrm_id.
+
+SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE text-001.
+  PARAMETERS : EMP_ID TYPE ZAB_EMP_ID,
+               FNAME TYPE C length 20 ,
+               LNAME TYPE C length 20,
+               DOB TYPE D ,
+               GENDER  AS LISTBOX VISIBLE LENGTH 20,
+               ADDRESS TYPE C length 50,
+               CITY TYPE C length 20,
+               STATE TYPE C length 20,
+               PHONE TYPE C length 20,
+               EMAILID TYPE C length 20,
+               DESG TYPE C length 20 ,
+               DOJ TYPE D ,
+               DPT TYPE C length 20.
+
+SELECTION-SCREEN END OF BLOCK b1.
+
+AT SELECTION-SCREEN OUTPUT.
+
+NAME = 'GENDER'.
+value-key = '1'.
+ value-text = 'Male'.
+  APPEND value.
+
+value-key = '2'.
+  value-text = 'Female'.
+  APPEND value.
+
+    CALL FUNCTION 'VRM_SET_VALUES'
+    EXPORTING
+      id     = NAME
+      values = value[].
+
+
+START-OF-SELECTION.
+
+READ TABLE value WITH KEY key = GENDER.
+result = value-text.
+WRITE: / 'PARAMETER1:', result.
+
+
+
+
+
+ CLASS ORG DEFINITION .
+  PUBLIC SECTION.
+  data it_employee type standard table of ZAB_EMP_DETAILS.
+  data wa_ztable type ZAB_EMP_DETAILS.
+
+  METHODS ValidateEmail.
+  METHODS ValidateMobile.
+  METHODS INSERT.
+
+   ENDCLASS.
+
+  CLASS ORG IMPLEMENTATION.
+
+METHOD ValidateMobile.
+******Check Phone Number******
+
+ld_length = strlen( PHONE ).
+if ld_length < 10.
+  MESSAGE 'Phone number should be 10 characters long!!' TYPE 'W'.
+ENDIF.
+
+ENDMETHOD.
+
+  METHOD ValidateEmail.
+
+  lv_pattern = '^([0-9a-zA-Z]([-.w]*[0-9a-zA-Z])*@([0-9a-zA-Z][-w]*[0-9a-zA-Z].)+[azA-Z]{2,9})$'.
+  lr_matcher = cl_abap_matcher=>create(
+                      pattern = lv_pattern
+                      text = 'text@gmail.com' ) .
+  TRY.
+      lr_matcher = cl_abap_matcher=>create(
+            pattern       = lv_pattern
+            text          = EMAILID
+            ignore_case   = abap_false
+            simple_regex  = abap_false
+            no_submatches = abap_false ).
+
+      CALL METHOD lr_matcher->match
+        RECEIVING
+          success = lv_success.
+
+      IF lv_success = abap_false.
+        MESSAGE 'Email is not valid' TYPE 'W'.
+      ENDIF.
+    CATCH cx_sy_regex.
+      MESSAGE 'Error occurs' TYPE 'E'.
+    CATCH cx_sy_matcher .
+      MESSAGE 'Error occurs' TYPE 'E'.
+  ENDTRY.
+  ENDMETHOD.
+
+    METHOD INSERT.
+
+      wa_ztable-EMP_ID = EMP_ID.
+      wa_ztable-FIRST_NAME = FNAME.
+      wa_ztable-LAST_NAME = LNAME.
+      wa_ztable-DOB = DOB.
+      wa_ztable-GENDER = result.
+      wa_ztable-ADDRESS = ADDRESS.
+      wa_ztable-CITY = CITY.
+      wa_ztable-STATE = STATE.
+      wa_ztable-CONTACT_NO = PHONE.
+      wa_ztable-EMAIL_ID = EMAILID.
+      wa_ztable-DESIGNATION = DESG.
+      wa_ztable-DATE_OF_JOINING = DOJ.
+      wa_ztable-DEPARTMENT = DPT.
+
+insert   wa_ztable into table it_employee.
+insert ZAB_EMP_DETAILS from table it_employee.
+
+if sy-subrc = 0.
+  write 'Record Inserted Successfully'.
+elseif sy-subrc = 4.
+  write 'Error While Inserting Record'.
+   ENDIF.
+ENDMETHOD.
+    ENDCLASS.
+
+    START-OF-SELECTION.
+    DATA emp1 type REF TO org.
+    create OBJECT: emp1.
+
+    emp1->ValidateEmail( ).
+    emp1->ValidateMobile( ).
+    emp1->insert( ).

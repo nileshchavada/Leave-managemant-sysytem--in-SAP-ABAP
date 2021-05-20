@@ -1,0 +1,68 @@
+*&---------------------------------------------------------------------*
+*& Report  ZAB_LEAVE_INSERT
+*&
+*&---------------------------------------------------------------------*
+*&
+*&
+*&---------------------------------------------------------------------*
+
+REPORT  ZAB_LEAVE_INSERT.
+SELECTION-SCREEN BEGIN OF BLOCK b1 WITH FRAME TITLE text-001.
+  PARAMETERS : EMPID TYPE ZAB_EMP_ID,
+               EL TYPE I,
+               CL TYPE I,
+               SL TYPE I,
+               SPL TYPE I,
+               Total TYPE I.
+SELECTION-SCREEN END OF BLOCK b1.
+
+
+
+CLASS INSERT DEFINITION.
+ PUBLIC SECTION.
+ TYPES : begin of ty_insert,
+   EMP_ID type ZAB_EMP_ID,
+   EARNED_LEAVES type i,
+   CASUAL_LEAVES type i,
+   SICK_LEAVES type i,
+   SPECIAL_LEAVES type i,
+   TOTAL_LEAVES type i,
+   end of ty_insert.
+
+
+    DATA LS_LEAVES type  ty_insert .
+   DATA IT_LEAVES TYPE STANDARD TABLE OF ty_insert.
+
+       METHODS INSERT.
+ENDCLASS.
+
+CLASS INSERT  IMPLEMENTATION .
+  METHOD INSERT.
+
+
+      LS_LEAVES-EMP_ID = EMPID.
+      LS_LEAVES-EARNED_LEAVES = EL.
+      LS_LEAVES-CASUAL_LEAVES = CL.
+      LS_LEAVES-SICK_LEAVES = SL.
+      LS_LEAVES-SPECIAL_LEAVES = SPL.
+      LS_LEAVES-TOTAL_LEAVES = Total.
+
+insert ls_leaves into table it_leaves.
+
+*      LOOP AT IT_LEAVES into LS_LEAVES.
+
+insert ZAB_LEAVE_DETAIL from table it_leaves.
+if sy-subrc = 0.
+  write 'Leaves Inserted Successfully'.
+elseif sy-subrc = 15.
+  write 'Error While Inserting Leaves'.
+   ENDIF.
+
+ENDMETHOD.
+  ENDCLASS.
+
+
+START-OF-SELECTION.
+DATA I1 TYPE REF TO INSERT.
+  CREATE OBJECT I1.
+  I1->INSERT( ).
